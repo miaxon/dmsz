@@ -1,8 +1,6 @@
 #ifndef DEF_H
 #define DEF_H
 
-#include <QDebug>
-
 #define APP_NAME "${PROJECT_NAME}"
 #define APP_VER "${VERSION}"
 #define GIT_VERSION "${GIT_VERSION}"
@@ -12,13 +10,5 @@
 #define FORMAT_DATE "yyyy-MM-dd"
 #define FORMAT_TIME "hh:mm:ss"
 #define FORMAT_DATETIME "yyyy-MM-dd hh:mm:ss"
-
-namespace MD {
-    enum Access{
-        Denied =0,
-        ReadOnly = 1,
-        ReadWrite,
-    };
-}
 
 #endif // DEF_H
