@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.0.0)
+cmake_minimum_required(VERSION 2.8.0)
 
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
 
@@ -22,6 +22,6 @@ file(GLOB SRC_LIST *.cpp)
 file(GLOB H_LIST *.h)
 
 
-add_library(dmsz SHARED ${OS_BUNDLE} ${SRC_LIST} ${H_LIST})
+add_library(dmsz SHARED ${SRC_LIST} ${H_LIST})
 target_link_libraries(dmsz)
 
