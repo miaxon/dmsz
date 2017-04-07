@@ -1,4 +1,6 @@
-# dmsz
+# dmsz build environment
+______________________________________________
+
 libdaemon:
 
 apt-get install libdaemon-dev
