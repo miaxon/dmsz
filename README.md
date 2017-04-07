@@ -12,7 +12,7 @@ uuid:
 apt-get install uuid-dev
 ______________________________________________
 zmqpp: 
-apt-get install autoconf pkg-config
+apt-get install autoconf pkg-config doxygen graphviz
 
 buid instruction: https://github.com/zeromq/zmqpp
 ______________________________________________
