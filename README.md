@@ -19,5 +19,5 @@ ______________________________________________
 msgpack-c:
 apt-get install cmake
 
-build instructuion: https://github.com/msgpack/msgpack-c
+build instruction: https://github.com/msgpack/msgpack-c
 ______________________________________________
