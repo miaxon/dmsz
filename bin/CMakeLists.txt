@@ -19,7 +19,8 @@ set(CMAKE_INSTALL_RPATH "$ORIGIN")
 set(CMAKE_BUILD_WITH_INSTALL_RPATH TRUE)
 
 include_directories(
-    hpp)
+    hpp,
+    ../logger)
 # Get source files list
 file(GLOB SRC_LIST *.cpp)
 
@@ -27,6 +28,6 @@ file(GLOB H_LIST *.h)
 
 
 add_executable(dms ${SRC_LIST} ${H_LIST})
-target_link_libraries(dms dmsz daemon)
+target_link_libraries(dms dmsz daemon dmszlog)
 
 

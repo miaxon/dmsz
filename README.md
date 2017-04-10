@@ -21,3 +21,10 @@ apt-get install cmake
 
 build instruction: https://github.com/msgpack/msgpack-c
 ______________________________________________
+fmt:
+
+build instruction: https://github.com/fmtlib/fmt
+______________________________________________
+ini:
+
+build instruction: https://github.com/benhoyt/inih
