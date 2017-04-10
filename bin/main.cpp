@@ -21,6 +21,7 @@
 #include "def.h"
 #include "hpp/optionparser.h"
 #include "zlog.h"
+#include "INIReader.h"
 
 enum optionIndex {
     UNKNOWN, HELP, DAEMON
@@ -37,6 +38,19 @@ int main(int argc, char** argv) {
     
     dmsz::log::zlog logger;
     logger.info("sdsdsd");
+    
+    INIReader reader("dms.conf");
+    
+    if (reader.ParseError() < 0) {
+        std::cout << "Can't load 'dms.conf'\n";
+        return 1;
+    }
+    std::cout << "Config loaded from 'test.ini': version="
+              << reader.GetInteger("protocol", "version", -1) << ", name="
+              << reader.Get("user", "name", "UNKNOWN") << ", email="
+              << reader.Get("user", "email", "UNKNOWN") << ", pi="
+              << reader.GetReal("user", "pi", -1) << ", active="
+              << reader.GetBoolean("user", "active", true) << "\n";
     argc -= (argc > 0);
     argv += (argc > 0); // skip program name argv[0] if present
     option::Stats stats(usage, argc, argv);
