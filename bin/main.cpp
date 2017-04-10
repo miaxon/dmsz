@@ -53,9 +53,6 @@ int main(int argc, char** argv) {
     }
 
 
-    std::cout << "--plus count: " <<
-            options[DAEMON].count() << "\n";
-
     for (option::Option* opt = options[UNKNOWN]; opt; opt = opt->next()) {
         std::cout << "Unknown option: " << std::string(opt->name, opt->namelen) << "\n";
     }
