@@ -22,7 +22,7 @@ namespace dmsz {
         zlog::~zlog() {
         }
 
-        void zlog::info(std::string str) {
+        void zlog::info(std::string str ) {
 
             using namespace std;
             using namespace chrono;
@@ -32,8 +32,7 @@ namespace dmsz {
             zmqpp::message msg;
             msg << "A" << fmt::format(
                     "[ {:%Y-%m-%d %H:%M:%S}] {}",
-                    *localtime(&unix_time),
-                    str);
+                    *localtime(&unix_time), str);
             m_pub.send(msg, true);
         }
     }

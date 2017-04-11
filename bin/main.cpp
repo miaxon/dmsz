@@ -1,7 +1,6 @@
 #include <cstdlib>
 #include <iostream>
 #include <string>
-#include <vector>
 
 #include <signal.h>
 #include <errno.h>
@@ -10,6 +9,10 @@
 #include <sys/time.h>
 #include <sys/unistd.h>
 #include <sys/select.h>
+#include <atomic>
+#include <thread>
+#include <vector>
+#include <sstream>
 
 #include <libdaemon/dfork.h>
 #include <libdaemon/dsignal.h>
@@ -31,24 +34,72 @@ static dmsz::log::zlogproxy proxy(log_endpoint);
 enum optionIndex {
     UNKNOWN, HELP, DAEMON
 };
-const option::Descriptor usage[] ={
+const option::Descriptor usage[] = {
     {UNKNOWN, 0, "", "", option::Arg::None, "USAGE: dmsz [options]\n\n"
         "Options:"},
     {HELP, 0, "h", "help", option::Arg::None, "  --help, -h  \tPrint usage and exit."},
     {DAEMON, 0, "d", "daemon", option::Arg::None, "  --daemon, -d  \tRun as daemon."},
     {0, 0, 0, 0, 0, 0}
 };
+#define MULTI_THREAD
+void test() {
+
+    using namespace std;
+    using namespace std::chrono;
+    unsigned int thread_count = 4;
+    unsigned int howmany = 1000000;
+    vector<thread> threads;
+    auto start = system_clock::now();
+    dmsz::log::zlog logger(log_endpoint);
+
+#if !defined(MULTI_THREAD)
+    for (unsigned int i = 0; i < howmany; i++) {
+        //Has to be customized for every logger
+        logger.info(" Message #" + std::to_string(i));
+    }
+#else
+    howmany /= thread_count;
+    for (int t = 0; t < thread_count; ++t) {
+        threads.push_back(std::thread([&] {
+            for (unsigned int i = 0; i < howmany; i++) {
+                //Has to be customized for every logger
+                logger.info(" Message #" + std::to_string(i));
+            }
+        }));
+    }
+
+
+    for (auto &t : threads) {
+        t.join();
+    };
+
+    howmany *= thread_count;
+
+#endif
+
+    auto delta = system_clock::now() - start;
+    auto delta_d = duration_cast<duration<double>> (delta).count();
+
+    stringstream ss;
+    ss << "Time = " << ((double) howmany / delta_d) << " per second, total time = " << delta_d;
+    logger.info(ss.str());
+
+    //Logger uninitialization if necessary 
+}
 
 int main(int argc, char** argv) {
-    
-    std::getchar();
-    
+
+    test();
+    return 0;
+
     dmsz::log::zlog logger(log_endpoint);
     std::getchar();
-        
+
     logger.info("");
-    logger.info("sdsdsd");logger.info("sdsdsd");logger.info("sdsdsd");
-    
+    logger.info("sdsdsd");
+    logger.info("sdsdsd");
+    logger.info("sdsdsd");
+
     /*INIReader reader("dms.conf");
     
     if (reader.ParseError() < 0) {

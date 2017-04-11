@@ -29,6 +29,6 @@ file(GLOB H_LIST *.h)
 
 
 add_executable(dms ${SRC_LIST} ${H_LIST})
-target_link_libraries(dms dmsz daemon dmszlog dmszini)
+target_link_libraries(dms dmsz daemon dmszlog dmszini pthread)
 
 
