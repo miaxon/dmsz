@@ -23,6 +23,12 @@
 #include "zlog.h"
 #include "INIReader.h"
 #include "zlogproxy.h"
+#include <zmqpp/context.hpp>
+
+static zmqpp::context zctx;
+static std::string log_endpoint("tcp://127.0.0.1:3335");
+static dmsz::log::zlogproxy proxy(zctx, log_endpoint, 3);
+
 enum optionIndex {
     UNKNOWN, HELP, DAEMON
 };
@@ -35,14 +41,17 @@ const option::Descriptor usage[] ={
 };
 
 int main(int argc, char** argv) {
-    std::getchar();
-    std::string log_endpoint("tcp://127.0.0.1:3335");
     
-    //dmsz::log::zlog logger(log_endpoint);
-    dmsz::log::zlogproxy proxy(log_endpoint, 3);    
-    //logger.info("sdsdsd");
+    //std::getchar();
+    assert(zctx);
+    zctx.set(zmqpp::context_option::io_threads, 3);
+    dmsz::log::zlog logger(zctx, log_endpoint);
+    //std::getchar();
+        
+    logger.info("");
+    logger.info("sdsdsd");logger.info("sdsdsd");logger.info("sdsdsd");
     
-    INIReader reader("dms.conf");
+    /*INIReader reader("dms.conf");
     
     if (reader.ParseError() < 0) {
         std::cout << "Can't load 'dms.conf'\n";
@@ -61,7 +70,7 @@ int main(int argc, char** argv) {
     std::vector<option::Option> buffer(stats.buffer_max);
     option::Parser parse(usage, argc, argv, &options[0], &buffer[0]);
 
-    /*if (parse.error())
+    if (parse.error())
         return 1;
 
     if (options[HELP] || argc == 0) {
@@ -80,5 +89,7 @@ int main(int argc, char** argv) {
     std::cout << GIT_VERSION << std::endl;
 
     std::getchar();
+    proxy.stop();
+    zctx.terminate();
     return 0;
 }

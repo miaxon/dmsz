@@ -15,19 +15,23 @@
 namespace dmsz {
     namespace log {
 
-        zlogproxy::zlogproxy(zmqpp::endpoint_t& endpoint, int nworkers) :
-        m_ctx(),
-        m_recv(m_ctx, zmqpp::socket_type::subscribe),
+        zlogproxy::zlogproxy(const zmqpp::context& ctx, const zmqpp::endpoint_t& endpoint, int nworkers) :
+        m_recv(ctx, zmqpp::socket_type::subscribe),
         m_endpoint(endpoint){
+            
             std::thread t(std::bind(&dmsz::log::zlogproxy::run, this));
             t.detach();
         }
 
         zlogproxy::~zlogproxy() {
+            m_recv.unsubscribe(m_endpoint);
+            m_recv.close();
         }
-
+        void zlogproxy::stop(){
+            m_ready = false;
+        }
         void zlogproxy::run() {
-            std::cout << "proxy starting: " << m_endpoint << std::endl;
+            m_ready = true;
             try{
             m_recv.connect(m_endpoint);
             }
@@ -35,19 +39,20 @@ namespace dmsz {
             {
                 std::cout << e.what();
             }
-            while (true) {
+            std::cout << "proxy starting: " << m_endpoint << std::endl;
+            while (m_ready) {
                 zmqpp::message req;
-                m_recv.receive(req, true);
-                log(req);               
-
+                std::string str;
+                m_recv.receive(str);
+                log(str);             
             }
+            m_recv.disconnect(m_endpoint);            
         }
 
-        void zlogproxy::log(zmqpp::message& msg) {
-            std::string text;
-            int number;
-            msg >> text >> number;
-            std::cout << "text: " << text << std::endl;
+        void zlogproxy::log(std::string& msg) const {
+            std::cout << "text: " << std::endl;
+            //std::string text = msg.get<std::string>(0);
+            std::cout << "text: " << msg << std::endl;
         }
     }
 }

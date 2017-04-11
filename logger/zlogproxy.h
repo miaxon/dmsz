@@ -25,14 +25,15 @@ namespace dmsz {
 
         class zlogproxy {
         public:
-            zlogproxy(zmqpp::endpoint_t& endpoint, int nworkers);
+            zlogproxy(const zmqpp::context& ctx, const zmqpp::endpoint_t& endpoint, int nworkers);
             virtual ~zlogproxy();
+            void stop();
         private:
+            bool m_ready;
             void run();
             std::string m_endpoint;
-            zmqpp::context m_ctx;
             zmqpp::socket m_recv;
-            void log(zmqpp::message& msg);
+            void log(std::string& msg) const;
         };
     }
 }

@@ -14,9 +14,8 @@
 namespace dmsz {
     namespace log {
 
-        zlog::zlog(zmqpp::endpoint_t& endpoint) :
-        m_ctx(),
-        m_sndr(m_ctx, zmqpp::socket_type::publish),
+        zlog::zlog(const zmqpp::context& ctx, zmqpp::endpoint_t& endpoint) :
+        m_sndr(ctx, zmqpp::socket_type::publish),
         m_endpoint(endpoint) {
 
             try {
@@ -31,16 +30,16 @@ namespace dmsz {
 
         void zlog::info(std::string str) {
 
-            using namespace std;
-            using namespace chrono;
-            auto now = system_clock::now();
-            auto ms = duration_cast< milliseconds >(now.time_since_epoch());
-            time_t unix_time = duration_cast< seconds >(ms).count();
+            //using namespace std;
+            //using namespace chrono;
+            //auto now = system_clock::now();
+            //auto ms = duration_cast< milliseconds >(now.time_since_epoch());
+            //time_t unix_time = duration_cast< seconds >(ms).count();
             zmqpp::message msg;
-            msg << fmt::format(
-                    "[ {:%Y-%m-%d %H:%M:%S}] {}",
-                    *localtime(&unix_time),
-                    str) << 42;
+            msg << str; //fmt::format(
+                    //"[ {:%Y-%m-%d %H:%M:%S}] {}",
+                    //*localtime(&unix_time),
+                    //str);
             bool res = false;
             try {
                 res = m_sndr.send(msg, true);
