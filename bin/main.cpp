@@ -22,7 +22,7 @@
 #include "hpp/optionparser.h"
 #include "zlog.h"
 #include "INIReader.h"
-
+#include "zlogproxy.h"
 enum optionIndex {
     UNKNOWN, HELP, DAEMON
 };
@@ -35,9 +35,12 @@ const option::Descriptor usage[] ={
 };
 
 int main(int argc, char** argv) {
+    std::getchar();
+    std::string log_endpoint("tcp://127.0.0.1:3335");
     
-    dmsz::log::zlog logger;
-    logger.info("sdsdsd");
+    //dmsz::log::zlog logger(log_endpoint);
+    dmsz::log::zlogproxy proxy(log_endpoint, 3);    
+    //logger.info("sdsdsd");
     
     INIReader reader("dms.conf");
     
@@ -58,7 +61,7 @@ int main(int argc, char** argv) {
     std::vector<option::Option> buffer(stats.buffer_max);
     option::Parser parse(usage, argc, argv, &options[0], &buffer[0]);
 
-    if (parse.error())
+    /*if (parse.error())
         return 1;
 
     if (options[HELP] || argc == 0) {
@@ -73,7 +76,9 @@ int main(int argc, char** argv) {
 
     for (int i = 0; i < parse.nonOptionsCount(); ++i) {
         std::cout << "Non-option #" << i << ": " << parse.nonOption(i) << "\n";
-    }
+    }*/
     std::cout << GIT_VERSION << std::endl;
+
+    std::getchar();
     return 0;
 }

@@ -14,28 +14,40 @@
 namespace dmsz {
     namespace log {
 
-        zlog::zlog() {
-        }
+        zlog::zlog(zmqpp::endpoint_t& endpoint) :
+        m_ctx(),
+        m_sndr(m_ctx, zmqpp::socket_type::publish),
+        m_endpoint(endpoint) {
 
-        zlog::zlog(const zlog& orig) {
+            try {
+                m_sndr.bind(m_endpoint);
+            }            catch (std::exception &e) {
+                std::cout << "bind exeption: " << e.what() << std::endl;
+            }
         }
 
         zlog::~zlog() {
         }
 
-        void zlog::info(std::string msg) {
+        void zlog::info(std::string str) {
 
             using namespace std;
             using namespace chrono;
-
             auto now = system_clock::now();
             auto ms = duration_cast< milliseconds >(now.time_since_epoch());
             time_t unix_time = duration_cast< seconds >(ms).count();
-
-            cout << fmt::format(
+            zmqpp::message msg;
+            msg << fmt::format(
                     "[ {:%Y-%m-%d %H:%M:%S}] {}",
                     *localtime(&unix_time),
-                    msg) << endl;
+                    str) << 42;
+            bool res = false;
+            try {
+                res = m_sndr.send(msg, true);
+            } catch (std::exception &e) {
+                std::cout << "bind exeption: " << e.what() << std::endl;
+            }
+            std::cout << res << std::endl;
         }
     }
 }

@@ -21,6 +21,9 @@
 #include <fmt/format.h>
 #include <fmt/ostream.h>
 #include <fmt/time.h>
+#include <zmqpp/zmqpp.hpp>
+#include <zmqpp/proxy.hpp>
+
 
 namespace dmsz {
     namespace log {
@@ -39,12 +42,14 @@ namespace dmsz {
 
         class zlog {
         public:
-            zlog();
+            zlog(zmqpp::endpoint_t& endpoint);
             zlog(const zlog&);
             virtual ~zlog();
             void info(std::string);
         private:
-
+            zmqpp::context m_ctx;
+            zmqpp::socket m_sndr;
+            zmqpp::endpoint_t m_endpoint;
         };
     }
 }
