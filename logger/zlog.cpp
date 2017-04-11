@@ -14,15 +14,9 @@
 namespace dmsz {
     namespace log {
 
-        zlog::zlog(const zmqpp::context& ctx, zmqpp::endpoint_t& endpoint) :
-        m_sndr(ctx, zmqpp::socket_type::publish),
-        m_endpoint(endpoint) {
-
-            try {
-                m_sndr.bind(m_endpoint);
-            }            catch (std::exception &e) {
-                std::cout << "bind exeption: " << e.what() << std::endl;
-            }
+        zlog::zlog(const zmqpp::endpoint_t& endpoint) :
+        m_pub(m_ctx, zmqpp::socket_type::publish) {
+            m_pub.bind(endpoint);
         }
 
         zlog::~zlog() {
@@ -30,23 +24,17 @@ namespace dmsz {
 
         void zlog::info(std::string str) {
 
-            //using namespace std;
-            //using namespace chrono;
-            //auto now = system_clock::now();
-            //auto ms = duration_cast< milliseconds >(now.time_since_epoch());
-            //time_t unix_time = duration_cast< seconds >(ms).count();
+            using namespace std;
+            using namespace chrono;
+            auto now = system_clock::now();
+            auto ms = duration_cast< milliseconds >(now.time_since_epoch());
+            time_t unix_time = duration_cast< seconds >(ms).count();
             zmqpp::message msg;
-            msg << str; //fmt::format(
-                    //"[ {:%Y-%m-%d %H:%M:%S}] {}",
-                    //*localtime(&unix_time),
-                    //str);
-            bool res = false;
-            try {
-                res = m_sndr.send(msg, true);
-            } catch (std::exception &e) {
-                std::cout << "bind exeption: " << e.what() << std::endl;
-            }
-            std::cout << res << std::endl;
+            msg << "A" << fmt::format(
+                    "[ {:%Y-%m-%d %H:%M:%S}] {}",
+                    *localtime(&unix_time),
+                    str);
+            m_pub.send(msg, true);
         }
     }
 }

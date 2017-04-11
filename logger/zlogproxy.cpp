@@ -15,44 +15,46 @@
 namespace dmsz {
     namespace log {
 
-        zlogproxy::zlogproxy(const zmqpp::context& ctx, const zmqpp::endpoint_t& endpoint, int nworkers) :
-        m_recv(ctx, zmqpp::socket_type::subscribe),
-        m_endpoint(endpoint){
-            
+        zlogproxy::zlogproxy(const zmqpp::endpoint_t& endpoint) :
+
+        m_endpoint(endpoint) {
+
             std::thread t(std::bind(&dmsz::log::zlogproxy::run, this));
             t.detach();
         }
 
         zlogproxy::~zlogproxy() {
-            m_recv.unsubscribe(m_endpoint);
-            m_recv.close();
-        }
-        void zlogproxy::stop(){
-            m_ready = false;
-        }
-        void zlogproxy::run() {
-            m_ready = true;
-            try{
-            m_recv.connect(m_endpoint);
-            }
-            catch(std::exception &e)
-            {
-                std::cout << e.what();
-            }
-            std::cout << "proxy starting: " << m_endpoint << std::endl;
-            while (m_ready) {
-                zmqpp::message req;
-                std::string str;
-                m_recv.receive(str);
-                log(str);             
-            }
-            m_recv.disconnect(m_endpoint);            
+            
         }
 
-        void zlogproxy::log(std::string& msg) const {
-            std::cout << "text: " << std::endl;
-            //std::string text = msg.get<std::string>(0);
-            std::cout << "text: " << msg << std::endl;
+        void zlogproxy::stop() {
+            m_ready = false;
+        }
+
+        void zlogproxy::run() {
+            m_ready = true;
+            zmqpp::context ctx;
+            zmqpp::socket sub(ctx, zmqpp::socket_type::subscribe);
+            sub.connect(m_endpoint);
+            sub.subscribe("A");
+            std::cout << "proxy starting: " << m_endpoint << std::endl;
+            while (m_ready) {
+                zmqpp::message msg;
+                sub.receive(msg);
+                log(msg);
+            }
+            sub.unsubscribe(m_endpoint);
+            sub.disconnect(m_endpoint);
+            sub.close();
+            ctx.terminate();
+        }
+
+        void zlogproxy::log(zmqpp::message& msg) const {
+            if (msg.parts()) {
+                std::string key = msg.get(0);
+                std::string body = msg.get(1);
+                std::cout << "Received text:\"" << key << "\" and a number: " << body << std::endl;
+            }
         }
     }
 }

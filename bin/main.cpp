@@ -25,9 +25,8 @@
 #include "zlogproxy.h"
 #include <zmqpp/context.hpp>
 
-static zmqpp::context zctx;
 static std::string log_endpoint("tcp://127.0.0.1:3335");
-static dmsz::log::zlogproxy proxy(zctx, log_endpoint, 3);
+static dmsz::log::zlogproxy proxy(log_endpoint);
 
 enum optionIndex {
     UNKNOWN, HELP, DAEMON
@@ -42,11 +41,10 @@ const option::Descriptor usage[] ={
 
 int main(int argc, char** argv) {
     
-    //std::getchar();
-    assert(zctx);
-    zctx.set(zmqpp::context_option::io_threads, 3);
-    dmsz::log::zlog logger(zctx, log_endpoint);
-    //std::getchar();
+    std::getchar();
+    
+    dmsz::log::zlog logger(log_endpoint);
+    std::getchar();
         
     logger.info("");
     logger.info("sdsdsd");logger.info("sdsdsd");logger.info("sdsdsd");
@@ -90,6 +88,5 @@ int main(int argc, char** argv) {
 
     std::getchar();
     proxy.stop();
-    zctx.terminate();
     return 0;
 }

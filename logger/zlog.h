@@ -42,13 +42,13 @@ namespace dmsz {
 
         class zlog {
         public:
-            zlog(const zmqpp::context& ctx, zmqpp::endpoint_t& endpoint);
+            zlog(const zmqpp::endpoint_t& endpoint);
             zlog(const zlog&);
             virtual ~zlog();
             void info(std::string);
         private:
-            zmqpp::socket m_sndr;
-            zmqpp::endpoint_t m_endpoint;
+            zmqpp::context m_ctx;
+            zmqpp::socket m_pub;
         };
     }
 }
