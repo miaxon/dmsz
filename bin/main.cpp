@@ -31,8 +31,8 @@
 #include "zlogproxy.h"
 #include <zmqpp/context.hpp>
 
-//static std::string log_endpoint("tcp://127.0.0.1:3335");
-static std::string log_endpoint("ipc://1111");
+static std::string log_endpoint("tcp://127.0.0.1:3335");
+//static std::string log_endpoint("ipc://1111");
 static dmsz::log::zlogproxy proxy(log_endpoint);
 
 enum optionIndex {
@@ -51,7 +51,7 @@ void test() {
     using namespace std;
     using namespace std::chrono;
    
-    unsigned int howmany = 8000;
+    unsigned int howmany = 80000;
     vector<thread> threads;
     auto start = system_clock::now();
     
