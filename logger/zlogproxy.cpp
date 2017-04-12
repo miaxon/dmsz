@@ -19,7 +19,7 @@ namespace dmsz {
         m_endpoint(endpoint),
         m_workers(workers),
         m_ctx(){
-            m_ctx.set(zmqpp::context_option::io_threads, 6);
+            m_ctx.set(zmqpp::context_option::io_threads, 16);
             std::thread t(std::bind(&dmsz::log::zlogproxy::run, this));
             t.detach();
         }
@@ -29,10 +29,16 @@ namespace dmsz {
         }
 
         void zlogproxy::run() {
-            zmqpp::socket router(m_ctx, zmqpp::socket_type::router);
+            zmqpp::socket router(m_ctx, zmqpp::socket_type::pull);
             router.bind(m_endpoint);
-
-            uuid_t uuid;
+            while(true)
+            {
+                zmqpp::message msg;
+                router.receive(msg);
+                if(msg.parts())
+                    log(msg);
+            }
+            /*uuid_t uuid;
             uuid_generate(uuid);
             char uuid_str[37];
             uuid_unparse_lower(uuid, uuid_str);
@@ -56,14 +62,14 @@ namespace dmsz {
             for (int i = 0; i < m_workers; ++i) {
                 delete workers[i];
                 delete threads[i];
-            }
+            }*/
         }
 
         void zlogproxy::log(zmqpp::message& msg) const {
             if (msg.parts()) {
                 std::string key = msg.get(0);
-                std::string body = msg.get(1);
-                std::cout << "Received text:\"" << key << "\" and a number: " << body << std::endl;
+                //std::string body = msg.get(1);
+                std::cout << "Received text:\"" << key << "\n";//and a number: " << body << std::endl;
             }
         }
     }

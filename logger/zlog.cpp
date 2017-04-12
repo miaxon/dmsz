@@ -16,7 +16,7 @@ namespace dmsz {
 
         zlog::zlog(const zmqpp::endpoint_t& endpoint) :
         m_ctx(),
-        m_zsock(m_ctx, zmqpp::socket_type::dealer) {
+        m_zsock(m_ctx, zmqpp::socket_type::push) {
             uuid_t uuid;
             uuid_generate(uuid);
             char uuid_str[37];
