@@ -21,10 +21,13 @@ namespace dmsz {
 
         class zlogworker {
         public:
-            zlogworker();
+            zlogworker(zmqpp::context& ctx, std::string& endpoint);
             virtual ~zlogworker();
-            void work(zmqpp::context* ctx, const std::string& bind_string);
+            void work();
         private:
+            zmqpp::socket_t m_socket;
+            zmqpp::context_t &m_ctx;
+            std::string m_endpoint;
             void log(zmqpp::message& msg);
         };
     }
