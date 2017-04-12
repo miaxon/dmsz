@@ -1,6 +1,8 @@
 #include <cstdlib>
 #include <iostream>
 #include <string>
+#include <vector>
+#include <sstream>
 
 #include <signal.h>
 #include <errno.h>
@@ -28,7 +30,8 @@
 #include "zlogproxy.h"
 #include <zmqpp/context.hpp>
 
-static std::string log_endpoint("tcp://127.0.0.1:3335");
+static std::string log_endpoint("tcp://127.0.0.1:3334");
+//static std::string log_endpoint("ipc://1111");
 static dmsz::log::zlogproxy proxy(log_endpoint);
 
 enum optionIndex {
@@ -46,21 +49,24 @@ void test() {
 
     using namespace std;
     using namespace std::chrono;
-    unsigned int thread_count = 4;
-    unsigned int howmany = 1000000;
+   
+    unsigned int howmany = 1000000;//0000;
     vector<thread> threads;
     auto start = system_clock::now();
-    dmsz::log::zlog logger(log_endpoint);
+    
 
 #if !defined(MULTI_THREAD)
+    dmsz::log::zlog logger(log_endpoint);
     for (unsigned int i = 0; i < howmany; i++) {
         //Has to be customized for every logger
         logger.info(" Message #" + std::to_string(i));
     }
 #else
+     int thread_count = 8;
     howmany /= thread_count;
     for (int t = 0; t < thread_count; ++t) {
-        threads.push_back(std::thread([&] {
+        threads.push_back(std::thread([&] {\
+            dmsz::log::zlog logger(log_endpoint);
             for (unsigned int i = 0; i < howmany; i++) {
                 //Has to be customized for every logger
                 logger.info(" Message #" + std::to_string(i));
@@ -82,14 +88,17 @@ void test() {
 
     stringstream ss;
     ss << "Time = " << ((double) howmany / delta_d) << " per second, total time = " << delta_d;
-    logger.info(ss.str());
-
+    //logger.info(ss.str());
+    std::cout << ss.str();
     //Logger uninitialization if necessary 
 }
 
 int main(int argc, char** argv) {
 
+    getchar();
     test();
+    std::cout << "end\n" ;
+    getchar();
     return 0;
 
     dmsz::log::zlog logger(log_endpoint);
