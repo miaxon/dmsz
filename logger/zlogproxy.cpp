@@ -15,38 +15,48 @@
 namespace dmsz {
     namespace log {
 
-        zlogproxy::zlogproxy(const zmqpp::endpoint_t& endpoint) :
-
-        m_endpoint(endpoint) {
+        zlogproxy::zlogproxy(const zmqpp::endpoint_t& endpoint, int workers) :
+        m_endpoint(endpoint),
+        m_workers(workers),
+        m_ctx(){
 
             std::thread t(std::bind(&dmsz::log::zlogproxy::run, this));
             t.detach();
         }
 
         zlogproxy::~zlogproxy() {
-            
-        }
 
-        void zlogproxy::stop() {
-            m_ready = false;
         }
 
         void zlogproxy::run() {
-            m_ready = true;
-            zmqpp::context ctx;
-            zmqpp::socket sub(ctx, zmqpp::socket_type::subscribe);
-            sub.connect(m_endpoint);
-            sub.subscribe("A");
+            zmqpp::socket router(m_ctx, zmqpp::socket_type::router);
+            router.bind(m_endpoint);
+
+            uuid_t uuid;
+            uuid_generate(uuid);
+            char uuid_str[37];
+            uuid_unparse_lower(uuid, uuid_str);
+            std::string route = fmt::format("inproc://{}", uuid_str);
+            zmqpp::socket dealer(m_ctx, zmqpp::socket_type::dealer);
+            dealer.bind(route);
+
             std::cout << "proxy starting: " << m_endpoint << std::endl;
-            while (m_ready) {
-                zmqpp::message msg;
-                sub.receive(msg);
-                log(msg);
+
+            std::vector<zlogworker*> workers;
+            std::vector<std::thread*> threads;
+            for (int i = 0; i < m_workers; ++i) {
+                workers.push_back(new zlogworker(m_ctx, route));
+                threads.push_back(new std::thread(std::bind(&zlogworker::work, workers[i])));
+                threads[i]->detach();
             }
-            sub.unsubscribe(m_endpoint);
-            sub.disconnect(m_endpoint);
-            sub.close();
-            ctx.terminate();
+            try {
+                zmqpp::proxy(router, dealer);
+            } catch (std::exception &e) {
+            }
+            for (int i = 0; i < m_workers; ++i) {
+                delete workers[i];
+                delete threads[i];
+            }
         }
 
         void zlogproxy::log(zmqpp::message& msg) const {

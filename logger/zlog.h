@@ -17,6 +17,7 @@
 #include <cstdlib>
 #include <iostream>
 #include <chrono>
+#include <uuid/uuid.h>
 
 #include <fmt/format.h>
 #include <fmt/ostream.h>
@@ -48,7 +49,7 @@ namespace dmsz {
             void info(std::string);
         private:
             zmqpp::context m_ctx;
-            zmqpp::socket m_pub;
+            zmqpp::socket m_zsock;
         };
     }
 }

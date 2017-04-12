@@ -19,19 +19,19 @@
 #include <uuid/uuid.h>
 #include <fmt/format.h>
 
-//#include "zlogworker.h"
+#include "zlogworker.h"
 namespace dmsz {
     namespace log {
 
         class zlogproxy {
         public:
-            zlogproxy(const zmqpp::endpoint_t& endpoint);
+            zlogproxy(const zmqpp::endpoint_t& endpoint, int workers = 4);
             virtual ~zlogproxy();
-            void stop();
         private:
-            bool m_ready;
             void run();
+            zmqpp::context m_ctx;
             std::string m_endpoint;
+            int m_workers;
             void log(zmqpp::message& msg) const;
         };
     }

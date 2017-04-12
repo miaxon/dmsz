@@ -15,25 +15,31 @@ namespace dmsz {
     namespace log {
 
         zlog::zlog(const zmqpp::endpoint_t& endpoint) :
-        m_pub(m_ctx, zmqpp::socket_type::publish) {
-            m_pub.bind(endpoint);
+        m_ctx(),
+        m_zsock(m_ctx, zmqpp::socket_type::dealer) {
+            uuid_t uuid;
+            uuid_generate(uuid);
+            char uuid_str[37];
+            uuid_unparse_lower(uuid, uuid_str);
+            m_zsock.set(zmqpp::socket_option::identity, std::string(uuid_str));
+            m_zsock.connect(endpoint);
         }
 
         zlog::~zlog() {
+            m_zsock.close();
         }
 
-        void zlog::info(std::string str ) {
+        void zlog::info(std::string str) {
 
             using namespace std;
             using namespace chrono;
             auto now = system_clock::now();
             auto ms = duration_cast< milliseconds >(now.time_since_epoch());
             time_t unix_time = duration_cast< seconds >(ms).count();
+            std::string text = fmt::format("[ {:%Y-%m-%d %H:%M:%S}] {}", *localtime(&unix_time), str);
             zmqpp::message msg;
-            msg << "A" << fmt::format(
-                    "[ {:%Y-%m-%d %H:%M:%S}] {}",
-                    *localtime(&unix_time), str);
-            m_pub.send(msg, true);
+            msg  << text;
+            m_zsock.send(msg, true);
         }
     }
 }

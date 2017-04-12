@@ -2,6 +2,9 @@
 #include <iostream>
 #include <string>
 
+#include <chrono>
+#include <thread>
+
 #include <signal.h>
 #include <errno.h>
 #include <string.h>
@@ -28,7 +31,8 @@
 #include "zlogproxy.h"
 #include <zmqpp/context.hpp>
 
-static std::string log_endpoint("tcp://127.0.0.1:3335");
+//static std::string log_endpoint("tcp://127.0.0.1:3335");
+static std::string log_endpoint("ipc://1111");
 static dmsz::log::zlogproxy proxy(log_endpoint);
 
 enum optionIndex {
@@ -46,24 +50,29 @@ void test() {
 
     using namespace std;
     using namespace std::chrono;
-    unsigned int thread_count = 4;
-    unsigned int howmany = 1000000;
+   
+    unsigned int howmany = 10000000;
     vector<thread> threads;
     auto start = system_clock::now();
-    dmsz::log::zlog logger(log_endpoint);
+    
 
 #if !defined(MULTI_THREAD)
+    dmsz::log::zlog logger(log_endpoint);
     for (unsigned int i = 0; i < howmany; i++) {
         //Has to be customized for every logger
         logger.info(" Message #" + std::to_string(i));
     }
 #else
+     int thread_count = 4;
     howmany /= thread_count;
     for (int t = 0; t < thread_count; ++t) {
+        
         threads.push_back(std::thread([&] {
+            dmsz::log::zlog logger(log_endpoint);
             for (unsigned int i = 0; i < howmany; i++) {
                 //Has to be customized for every logger
                 logger.info(" Message #" + std::to_string(i));
+                std::this_thread::sleep_for (std::chrono::seconds(1));
             }
         }));
     }
@@ -82,13 +91,14 @@ void test() {
 
     stringstream ss;
     ss << "Time = " << ((double) howmany / delta_d) << " per second, total time = " << delta_d;
-    logger.info(ss.str());
+    std::cout << ss.str() << std::endl;
 
     //Logger uninitialization if necessary 
 }
 
 int main(int argc, char** argv) {
 
+    getchar();
     test();
     return 0;
 
@@ -138,6 +148,5 @@ int main(int argc, char** argv) {
     std::cout << GIT_VERSION << std::endl;
 
     std::getchar();
-    proxy.stop();
     return 0;
 }

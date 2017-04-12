@@ -15,30 +15,31 @@
 namespace dmsz {
     namespace log {
 
-        zlogworker::zlogworker() {
+        zlogworker::zlogworker(zmqpp::context& ctx, std::string& endpoint) :
+
+        m_endpoint(endpoint), m_ctx(ctx),
+        m_zsock(ctx, zmqpp::socket_type::dealer) {
+
         }
 
         zlogworker::~zlogworker() {
         }
 
-        void zlogworker::work(zmqpp::context* ctx, const std::string& bind_string) {
-            zmqpp::socket socket(*ctx, zmqpp::socket_type::subscribe);
-            socket.connect(bind_string);
-            try {
-                while (true) {
-                    zmqpp::message req;
-                    socket.receive(req);
-                    log(req);
-                }
-            } catch (std::exception &e) {
+        void zlogworker::work() {
+            m_zsock.connect(m_endpoint);
+            while (true) {
+                zmqpp::message msg;
+                m_zsock.receive(msg);
+                if (msg.parts())
+                    log(msg);
             }
         }
 
         void zlogworker::log(zmqpp::message& msg) {
             std::string text;
-            int number;
-            msg >> text >> number;
-            std::cout << "text: " << text << std::endl;
+            std::string iden;
+            msg >> iden >> text;
+            std::cout << iden << " " << text << std::endl;
         }
     }
 }
