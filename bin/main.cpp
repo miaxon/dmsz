@@ -51,7 +51,7 @@ void test() {
     using namespace std;
     using namespace std::chrono;
    
-    unsigned int howmany = 1000000;
+    unsigned int howmany = 8000;
     vector<thread> threads;
     auto start = system_clock::now();
     
@@ -102,6 +102,7 @@ int main(int argc, char** argv) {
 
     getchar();
     test();
+    getchar();
     return 0;
 
     dmsz::log::zlog logger(log_endpoint);

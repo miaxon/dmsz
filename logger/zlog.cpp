@@ -16,17 +16,12 @@ namespace dmsz {
 
         zlog::zlog(const zmqpp::endpoint_t& endpoint) :
         m_ctx(),
-        m_zsock(m_ctx, zmqpp::socket_type::push) {
-            uuid_t uuid;
-            uuid_generate(uuid);
-            char uuid_str[37];
-            uuid_unparse_lower(uuid, uuid_str);
-            m_zsock.set(zmqpp::socket_option::identity, std::string(uuid_str));
+        m_zsock(m_ctx, zmqpp::socket_type::push) {            
             m_zsock.connect(endpoint);
         }
 
         zlog::~zlog() {
-            m_zsock.close();
+            //m_zsock.close();
         }
 
         void zlog::info(std::string str) {
