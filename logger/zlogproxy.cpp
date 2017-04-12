@@ -19,7 +19,7 @@ namespace dmsz {
         m_endpoint(endpoint),
         m_workers(workers),
         m_ctx(){
-
+            m_ctx.set(zmqpp::context_option::io_threads, 6);
             std::thread t(std::bind(&dmsz::log::zlogproxy::run, this));
             t.detach();
         }

@@ -51,7 +51,7 @@ void test() {
     using namespace std;
     using namespace std::chrono;
    
-    unsigned int howmany = 10000000;
+    unsigned int howmany = 1000000;
     vector<thread> threads;
     auto start = system_clock::now();
     
@@ -63,7 +63,7 @@ void test() {
         logger.info(" Message #" + std::to_string(i));
     }
 #else
-     int thread_count = 4;
+     int thread_count = 8;
     howmany /= thread_count;
     for (int t = 0; t < thread_count; ++t) {
         
@@ -71,8 +71,10 @@ void test() {
             dmsz::log::zlog logger(log_endpoint);
             for (unsigned int i = 0; i < howmany; i++) {
                 //Has to be customized for every logger
-                logger.info(" Message #" + std::to_string(i));
-                std::this_thread::sleep_for (std::chrono::seconds(1));
+                stringstream ss;
+                ss << std::this_thread::get_id() << " Message #" << i;
+                logger.info(ss.str());
+                std::this_thread::sleep_for (std::chrono::microseconds(10));
             }
         }));
     }

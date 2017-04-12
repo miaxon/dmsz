@@ -25,7 +25,7 @@ namespace dmsz {
 
         class zlogproxy {
         public:
-            zlogproxy(const zmqpp::endpoint_t& endpoint, int workers = 4);
+            zlogproxy(const zmqpp::endpoint_t& endpoint, int workers = 8);
             virtual ~zlogproxy();
         private:
             void run();
