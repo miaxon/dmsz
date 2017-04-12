@@ -21,7 +21,6 @@ namespace dmsz {
         }
 
         zlog::~zlog() {
-            //m_zsock.close();
         }
 
         void zlog::info(std::string str) {
