@@ -27,9 +27,10 @@ namespace dmsz {
             void work();
         private:
             void log(zmqpp::message& msg);
+            std::string m_endpoint;
             zmqpp::context& m_ctx;
             zmqpp::socket m_zsock;
-            std::string m_endpoint;
+
         };
     }
 }

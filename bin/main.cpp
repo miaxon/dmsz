@@ -31,9 +31,16 @@
 #include "zlogpull.h"
 #include <zmqpp/context.hpp>
 
-static std::string log_endpoint("tcp://127.0.0.1:3335");
-//static std::string log_endpoint("ipc://1111");
-static dmsz::log::zlogpull lpull(log_endpoint);
+static std::string endpoint("tcp://127.0.0.1:33353");
+static dmsz::log::zlogpull logpull;
+dmsz::log::zlog_st tcp_log(endpoint);
+dmsz::log::zlog_st ipc_log(logpull);
+dmsz::log::zlog_st inp_log(logpull.ctx(), logpull.inp());
+
+dmsz::log::zlog_mt tcp_logm(endpoint);
+dmsz::log::zlog_mt ipc_logm(logpull);
+dmsz::log::zlog_mt inp_logm(logpull.ctx(), logpull.inp());
+
 
 enum optionIndex {
     UNKNOWN, HELP, DAEMON
@@ -45,10 +52,12 @@ const option::Descriptor usage[] = {
     {DAEMON, 0, "d", "daemon", option::Arg::None, "  --daemon, -d  \tRun as daemon."},
     {0, 0, 0, 0, 0, 0}
 };
-#define MULTI_THREAD
+//#define MULTI_THREAD
 
 void test() {
-
+    
+    dmsz::log::zlog_st& logger = inp_log;
+    dmsz::log::zlog_mt& loggerm = tcp_logm;
     using namespace std;
     using namespace std::chrono;
 
@@ -58,18 +67,19 @@ void test() {
 
 
 #if !defined(MULTI_THREAD)
-    dmsz::log::zlog_st logger(log_endpoint);
+    
     for (unsigned int i = 0; i < howmany; i++) {
         //Has to be customized for every logger
-        logger.info(" Message #" + std::to_string(i));
+        logger.info(logger.protostring() + " #" + std::to_string(i));
+        loggerm.info(loggerm.protostring() + " #" + std::to_string(i));
+        ipc_logm.info(ipc_logm.protostring() + " #" + std::to_string(i));
     }
-#else
-    //dmsz::log::zlog_mt logger(log_endpoint);
+#else    
     int thread_count = 4;
     howmany /= thread_count;
     for (int t = 0; t < thread_count; ++t) {
         threads.push_back(std::thread([&] {
-            dmsz::log::zlog_st logger(log_endpoint);
+            //dmsz::log::zlog_st logger(lpull.ctx(), log_endpoint);
             for (unsigned int i = 0; i < howmany; i++) {
                 //Has to be customized for every logger
                 //stringstream ss;

@@ -16,16 +16,20 @@ namespace dmsz {
     namespace log {
 
         zlogworker::zlogworker(zmqpp::context& ctx, std::string& endpoint) :
-
-        m_endpoint(endpoint), m_ctx(ctx),
-        m_zsock(ctx, zmqpp::socket_type::dealer) {
+        m_endpoint(endpoint),
+        m_ctx(ctx),
+        m_zsock(ctx, zmqpp::socket_type::dealer)
+        {
 
         }
 
-        zlogworker::~zlogworker() {
+        zlogworker::~zlogworker()
+        {
         }
 
-        void zlogworker::work() {
+        void
+        zlogworker::work()
+        {
             m_zsock.connect(m_endpoint);
             while (true) {
                 zmqpp::message msg;
@@ -35,7 +39,9 @@ namespace dmsz {
             }
         }
 
-        void zlogworker::log(zmqpp::message& msg) {
+        void
+        zlogworker::log(zmqpp::message& msg)
+        {
             std::string text;
             std::string iden;
             msg >> iden >> text;

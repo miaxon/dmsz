@@ -25,6 +25,8 @@
 #include <zmqpp/zmqpp.hpp>
 #include <zmqpp/proxy.hpp>
 
+#include "zlogpull.h"
+
 
 namespace dmsz {
     namespace log {
@@ -39,6 +41,12 @@ namespace dmsz {
             WARNING,
             ERROR,
             FATAL
+        };
+
+        enum logrpoto {
+            tcp,
+            ipc,
+            inproc
         };
 
         struct null_lock_t {
@@ -60,15 +68,53 @@ namespace dmsz {
         template < typename LOCK >
         class zlog {
         public:
+            // tcp and ipc connetions
 
-            zlog(const zmqpp::endpoint_t& endpoint) :
-            m_ctx(),
-            m_zsock(m_ctx, zmqpp::socket_type::push) {
+            zlog(zmqpp::endpoint_t& endpoint) :
+            m_ctx_internal(),
+            m_ctx(m_ctx_internal),
+            m_zsock(m_ctx, zmqpp::socket_type::push),
+            m_proto(dmsz::log::logrpoto::tcp) {
+                m_zsock.connect(endpoint);
+            }
+            //ipc connetions
+
+            zlog(dmsz::log::zlogpull& pull) :
+            m_ctx_internal(),
+            m_ctx(m_ctx_internal),
+            m_zsock(m_ctx, zmqpp::socket_type::push),
+            m_proto(dmsz::log::logrpoto::ipc) {
+                m_zsock.connect(pull.ipc());
+            }
+            // inproc connections
+
+            zlog(zmqpp::context& ctx, const zmqpp::endpoint_t& endpoint) :
+            m_ctx(ctx),
+            m_zsock(m_ctx, zmqpp::socket_type::push),
+            m_proto(dmsz::log::logrpoto::inproc) {
                 m_zsock.connect(endpoint);
             }
 
             virtual ~zlog() {
             };
+
+            logrpoto
+            proto() {
+                return m_proto;
+            }
+
+            std::string
+            protostring() {
+                switch (m_proto) {
+                    case tcp:
+                        return "tcp";
+                    case ipc:
+                        return "ipc";
+                    case inproc:
+                        return "inproc";
+                }
+                return "undefined";
+            }
 
             void
             info(std::string str) {
@@ -84,9 +130,12 @@ namespace dmsz {
                 m_zsock.send(msg);
             }
         private:
-            zmqpp::context m_ctx;
+            zmqpp::context m_ctx_internal;
+            zmqpp::context_t& m_ctx;
             zmqpp::socket m_zsock;
-            std::shared_ptr< LOCK > m_lock{ std::make_shared< LOCK >()};           
+            logrpoto m_proto;
+            std::shared_ptr< LOCK > m_lock{ std::make_shared< LOCK >()};
+
 
         };
         using zlog_st = zlog<null_lock_t>;
