@@ -41,7 +41,7 @@ const option::Descriptor usage[] = {
     {DAEMON, 0, "d", "daemon", option::Arg::None, "  --daemon, -d  \tRun as daemon."},
     {0, 0, 0, 0, 0, 0}
 };
-#define MULTI_THREAD
+//#define MULTI_THREAD
 void test() {
 
     using namespace std;
@@ -50,9 +50,10 @@ void test() {
     unsigned int howmany = 1000000;
     vector<thread> threads;
     auto start = system_clock::now();
-    dmsz::log::zlog logger(log_endpoint);
+    
 
 #if !defined(MULTI_THREAD)
+    dmsz::log::zlog logger(log_endpoint);
     for (unsigned int i = 0; i < howmany; i++) {
         //Has to be customized for every logger
         logger.info(" Message #" + std::to_string(i));
@@ -61,6 +62,7 @@ void test() {
     howmany /= thread_count;
     for (int t = 0; t < thread_count; ++t) {
         threads.push_back(std::thread([&] {
+            dmsz::log::zlog logger(log_endpoint);
             for (unsigned int i = 0; i < howmany; i++) {
                 //Has to be customized for every logger
                 logger.info(" Message #" + std::to_string(i));
@@ -82,8 +84,7 @@ void test() {
 
     stringstream ss;
     ss << "Time = " << ((double) howmany / delta_d) << " per second, total time = " << delta_d;
-    logger.info(ss.str());
-
+    std::cout << ss.str() << std::endl;
     //Logger uninitialization if necessary 
 }
 
