@@ -11,8 +11,8 @@
  * Created on April 11, 2017, 2:18 PM
  */
 
-#ifndef ZLOGPROXY_H
-#define ZLOGPROXY_H
+#ifndef ZLOGPULL_H
+#define ZLOGPULL_H
 
 #include <zmqpp/zmqpp.hpp>
 #include <zmqpp/proxy.hpp>
@@ -23,10 +23,10 @@
 namespace dmsz {
     namespace log {
 
-        class zlogproxy {
+        class zlogpull {
         public:
-            zlogproxy(const zmqpp::endpoint_t& endpoint, int workers = 8);
-            virtual ~zlogproxy();
+            zlogpull(const zmqpp::endpoint_t& endpoint, int workers = 8);
+            virtual ~zlogpull();
         private:
             void run();
             zmqpp::context m_ctx;

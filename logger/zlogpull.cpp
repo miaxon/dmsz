@@ -11,40 +11,38 @@
  * Created on April 11, 2017, 2:18 PM
  */
 
-#include "zlogproxy.h"
+#include "zlogpull.h"
 namespace dmsz {
     namespace log {
 
-        zlogproxy::zlogproxy(const zmqpp::endpoint_t& endpoint, int workers) :
+        zlogpull::zlogpull(const zmqpp::endpoint_t& endpoint, int workers) :
         m_endpoint(endpoint),
         m_workers(workers),
         m_ctx() {
             m_ctx.set(zmqpp::context_option::io_threads, workers);
-            std::thread t(std::bind(&dmsz::log::zlogproxy::run, this));
+            std::thread t(std::bind(&dmsz::log::zlogpull::run, this));
             t.detach();
         }
 
-        zlogproxy::~zlogproxy() {
+        zlogpull::~zlogpull() {
 
         }
 
-        void zlogproxy::run() {
+        void zlogpull::run() {
             zmqpp::socket router(m_ctx, zmqpp::socket_type::pull);
             router.bind(m_endpoint);
             while (true) {
                 zmqpp::message msg;
-                router.receive(msg, true);
+                router.receive(msg);
                 if (msg.parts())
                     log(msg);
             }
         }
 
-        void zlogproxy::log(zmqpp::message& msg) const {
-            if (msg.parts()) {
-                std::string key = msg.get(0);
-                //std::string body = msg.get(1);
-                std::cout << "Received text:\"" << key << "\n"; //and a number: " << body << std::endl;
-            }
+        void zlogpull::log(zmqpp::message& msg) const {
+            std::string key = msg.get(0);
+            //std::string body = msg.get(1);
+            std::cout << key << "\n"; //and a number: " << body << std::endl;
         }
     }
 }

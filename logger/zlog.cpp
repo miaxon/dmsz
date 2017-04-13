@@ -33,7 +33,7 @@ namespace dmsz {
             std::string text = fmt::format("[ {:%Y-%m-%d %H:%M:%S}] {}", *localtime(&unix_time), str);
             zmqpp::message msg;
             msg  << text;
-            m_zsock.send(msg, true);
+            m_zsock.send(msg);
         }
     }
 }
