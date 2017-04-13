@@ -18,22 +18,28 @@ namespace dmsz {
         zlogpull::zlogpull(const zmqpp::endpoint_t& endpoint, int workers) :
         m_endpoint(endpoint),
         m_workers(workers),
-        m_ctx() {
-            m_ctx.set(zmqpp::context_option::io_threads, workers);
-            std::thread t(std::bind(&dmsz::log::zlogpull::run, this));
+        m_ctx(),
+        m_ready(true) {
+            std::thread t(&dmsz::log::zlogpull::run, this);
             t.detach();
         }
 
         zlogpull::~zlogpull() {
-
+            zmqpp::socket s(m_ctx, zmqpp::socket_type::push);
+            s.connect(m_endpoint);
+            s.send(zmqpp::signal::stop);            
+            std::this_thread::sleep_for(std::chrono::milliseconds(10));
         }
 
         void zlogpull::run() {
-            zmqpp::socket router(m_ctx, zmqpp::socket_type::pull);
-            router.bind(m_endpoint);
+            m_ctx.set(zmqpp::context_option::io_threads, m_workers);
+            zmqpp::socket zpull(m_ctx, zmqpp::socket_type::pull);
+            zpull.bind(m_endpoint);
             while (true) {
                 zmqpp::message msg;
-                router.receive(msg);
+                zpull.receive(msg);
+                if(msg.is_signal())
+                    break;
                 if (msg.parts())
                     log(msg);
             }

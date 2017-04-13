@@ -18,6 +18,8 @@
 #include <zmqpp/proxy.hpp>
 #include <uuid/uuid.h>
 #include <fmt/format.h>
+#include <chrono>
+#include <atomic>
 
 #include "zlogworker.h"
 namespace dmsz {
@@ -33,6 +35,7 @@ namespace dmsz {
             std::string m_endpoint;
             int m_workers;
             void log(zmqpp::message& msg) const;
+            std::atomic<bool> m_ready;            
         };
     }
 }

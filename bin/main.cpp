@@ -51,30 +51,29 @@ void test() {
     using namespace std;
     using namespace std::chrono;
    
-    unsigned int howmany = 1000000;
+    unsigned int howmany = 100;//0000;
     vector<thread> threads;
     auto start = system_clock::now();
     
 
 #if !defined(MULTI_THREAD)
-    dmsz::log::zlog logger(log_endpoint);
+    dmsz::log::zlog_st logger(log_endpoint);
     for (unsigned int i = 0; i < howmany; i++) {
         //Has to be customized for every logger
         logger.info(" Message #" + std::to_string(i));
     }
 #else
-     int thread_count = 4;
-    howmany /= thread_count;
-    for (int t = 0; t < thread_count; ++t) {
-        
-        threads.push_back(std::thread([&] {
-            dmsz::log::zlog logger(log_endpoint);
+    dmsz::log::zlog_mt logger(log_endpoint);
+    int thread_count = 4;
+    howmany /= thread_count;    
+    for (int t = 0; t < thread_count; ++t) {        
+        threads.push_back(std::thread([&] {            
             for (unsigned int i = 0; i < howmany; i++) {
                 //Has to be customized for every logger
                 //stringstream ss;
                 //ss << std::this_thread::get_id() << " Message #" << i;
                 logger.info(" Message #" + std::to_string(i));
-                std::this_thread::sleep_for (std::chrono::nanoseconds(10));
+                //std::this_thread::sleep_for (std::chrono::nanoseconds(10));
             }
         }));
     }
@@ -102,10 +101,10 @@ int main(int argc, char** argv) {
 
     getchar();
     test();
-    getchar();
+    //getchar();
     return 0;
-
-    dmsz::log::zlog logger(log_endpoint);
+}
+    /*dmsz::log::zlog logger(log_endpoint);
     std::getchar();
 
     logger.info("");
@@ -113,7 +112,7 @@ int main(int argc, char** argv) {
     logger.info("sdsdsd");
     logger.info("sdsdsd");
 
-    /*INIReader reader("dms.conf");
+    INIReader reader("dms.conf");
     
     if (reader.ParseError() < 0) {
         std::cout << "Can't load 'dms.conf'\n";
@@ -147,9 +146,9 @@ int main(int argc, char** argv) {
 
     for (int i = 0; i < parse.nonOptionsCount(); ++i) {
         std::cout << "Non-option #" << i << ": " << parse.nonOption(i) << "\n";
-    }*/
+    }
     std::cout << GIT_VERSION << std::endl;
 
     std::getchar();
-    return 0;
-}
+    return 0;*/
+//}

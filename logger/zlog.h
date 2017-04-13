@@ -17,8 +17,8 @@
 #include <cstdlib>
 #include <iostream>
 #include <chrono>
+#include <mutex>
 #include <uuid/uuid.h>
-
 #include <fmt/format.h>
 #include <fmt/ostream.h>
 #include <fmt/time.h>
@@ -41,18 +41,59 @@ namespace dmsz {
             FATAL
         };
 
+        struct null_lock_t {
+
+            void
+            lock() const {
+            }
+
+            bool
+            try_lock() const {
+                return true;
+            }
+
+            void
+            unlock() const {
+            }
+        };
+
+        template < typename LOCK >
         class zlog {
         public:
-            zlog(const zmqpp::endpoint_t& endpoint);
-            zlog(const zlog&);
-            virtual ~zlog();
-            void info(std::string);
+
+            zlog(const zmqpp::endpoint_t& endpoint) :
+            m_ctx(),
+            m_zsock(m_ctx, zmqpp::socket_type::push) {
+                m_zsock.connect(endpoint);
+            }
+
+            virtual ~zlog() {
+            };
+
+            void
+            info(std::string str) {
+                std::unique_lock< LOCK > lock(*m_lock);
+                using namespace std;
+                using namespace chrono;
+                auto now = system_clock::now();
+                auto ms = duration_cast< milliseconds >(now.time_since_epoch());
+                time_t unix_time = duration_cast< seconds >(ms).count();
+                std::string text = fmt::format("[ {:%Y-%m-%d %H:%M:%S}] {}", *localtime(&unix_time), str);
+                zmqpp::message msg;
+                msg << text;
+                m_zsock.send(msg);
+            }
         private:
             zmqpp::context m_ctx;
             zmqpp::socket m_zsock;
+            std::shared_ptr< LOCK > m_lock{ std::make_shared< LOCK >()};           
+
         };
-    }
-}
+        using zlog_st = zlog<null_lock_t>;
+        using zlog_mt = zlog<std::mutex>;
+
+    }// namespace log
+}// namespace dmsz
 
 
 #endif /* ZLOGGER_H */
