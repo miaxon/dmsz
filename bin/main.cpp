@@ -28,12 +28,12 @@
 #include "hpp/optionparser.h"
 #include "zlog.h"
 #include "INIReader.h"
-#include "zlogproxy.h"
+#include "zlogpull.h"
 #include <zmqpp/context.hpp>
 
 static std::string log_endpoint("tcp://127.0.0.1:3335");
 //static std::string log_endpoint("ipc://1111");
-static dmsz::log::zlogproxy proxy(log_endpoint);
+static dmsz::log::zlogpull lpull(log_endpoint);
 
 enum optionIndex {
     UNKNOWN, HELP, DAEMON
@@ -51,7 +51,7 @@ void test() {
     using namespace std;
     using namespace std::chrono;
    
-    unsigned int howmany = 80000;
+    unsigned int howmany = 1000000;
     vector<thread> threads;
     auto start = system_clock::now();
     
@@ -63,7 +63,7 @@ void test() {
         logger.info(" Message #" + std::to_string(i));
     }
 #else
-     int thread_count = 8;
+     int thread_count = 4;
     howmany /= thread_count;
     for (int t = 0; t < thread_count; ++t) {
         
@@ -71,10 +71,10 @@ void test() {
             dmsz::log::zlog logger(log_endpoint);
             for (unsigned int i = 0; i < howmany; i++) {
                 //Has to be customized for every logger
-                stringstream ss;
-                ss << std::this_thread::get_id() << " Message #" << i;
-                logger.info(ss.str());
-                std::this_thread::sleep_for (std::chrono::microseconds(10));
+                //stringstream ss;
+                //ss << std::this_thread::get_id() << " Message #" << i;
+                logger.info(" Message #" + std::to_string(i));
+                std::this_thread::sleep_for (std::chrono::nanoseconds(10));
             }
         }));
     }
