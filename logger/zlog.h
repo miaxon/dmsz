@@ -43,7 +43,7 @@ namespace dmsz {
             FATAL
         };
 
-        enum logrpoto {
+        enum proto {
             tcp,
             ipc,
             inproc
@@ -68,37 +68,26 @@ namespace dmsz {
         template < typename LOCK >
         class zlog {
         public:
-            // tcp and ipc connetions
+
+            zlog() :
+            m_ctx(dmsz::log::zlogpull::ctx),
+            m_push(*m_ctx, zmqpp::socket_type::push),
+            m_proto(dmsz::log::proto::inproc) {
+                m_push.connect(dmsz::log::zlogpull::inproc_endpoint());
+            }
 
             zlog(zmqpp::endpoint_t& endpoint) :
             m_ctx_internal(),
-            m_ctx(m_ctx_internal),
-            m_zsock(m_ctx, zmqpp::socket_type::push),
-            m_proto(dmsz::log::logrpoto::tcp) {
-                m_zsock.connect(endpoint);
-            }
-            //ipc connetions
-
-            zlog(dmsz::log::zlogpull& pull) :
-            m_ctx_internal(),
-            m_ctx(m_ctx_internal),
-            m_zsock(m_ctx, zmqpp::socket_type::push),
-            m_proto(dmsz::log::logrpoto::ipc) {
-                m_zsock.connect(pull.ipc());
-            }
-            // inproc connections
-
-            zlog(zmqpp::context& ctx, const zmqpp::endpoint_t& endpoint) :
-            m_ctx(ctx),
-            m_zsock(m_ctx, zmqpp::socket_type::push),
-            m_proto(dmsz::log::logrpoto::inproc) {
-                m_zsock.connect(endpoint);
+            m_ctx(&m_ctx_internal),
+            m_push(*m_ctx, zmqpp::socket_type::push),
+            m_proto(endpoint[0] == 'i'? dmsz::log::proto::ipc : dmsz::log::proto::tcp) {
+                m_push.connect(endpoint);
             }
 
             virtual ~zlog() {
             };
 
-            logrpoto
+            dmsz::log::proto
             proto() {
                 return m_proto;
             }
@@ -127,14 +116,16 @@ namespace dmsz {
                 std::string text = fmt::format("[ {:%Y-%m-%d %H:%M:%S}] {}", *localtime(&unix_time), str);
                 zmqpp::message msg;
                 msg << text;
-                m_zsock.send(msg);
+                m_push.send(msg);
             }
+       
         private:
             zmqpp::context m_ctx_internal;
-            zmqpp::context_t& m_ctx;
-            zmqpp::socket m_zsock;
-            logrpoto m_proto;
+            zmqpp::context* m_ctx;
+            zmqpp::socket m_push;
+            dmsz::log::proto m_proto;
             std::shared_ptr< LOCK > m_lock{ std::make_shared< LOCK >()};
+            
 
 
         };

@@ -12,6 +12,9 @@
  */
 
 #include "zlogpull.h"
+#include "zlog.h"
+zmqpp::context* dmsz::log::zlogpull::ctx = nullptr;
+std::string dmsz::log::zlogpull::m_inp_endpoint;
 namespace dmsz {
     namespace log {
 
@@ -20,11 +23,13 @@ namespace dmsz {
         m_tcp(m_ctx, zmqpp::socket_type::pull),
         m_ipc(m_ctx, zmqpp::socket_type::pull),
         m_inp(m_ctx, zmqpp::socket_type::pull),
+        m_ctl(m_ctx, zmqpp::socket_type::reply),
         m_run(true),
         m_thread(spawn()),
         m_reactor()
         {
-            
+            if (!ctx)
+                ctx = &m_ctx;
         }
 
         std::string
@@ -54,16 +59,19 @@ namespace dmsz {
         void
         zlogpull::run()
         {
-            m_tcp_endpoint = "tcp://*:33353";
             m_inp_endpoint = fmt::format("inproc://{}", uuid());
+            m_tcp_endpoint = "tcp://*:33353";
+            m_ctl_endpoint = "tcp://*:33355";
             m_ipc_endpoint = fmt::format("ipc://{}", uuid());
-            
+
             m_tcp.bind(m_tcp_endpoint);
             m_ipc.bind(m_ipc_endpoint);
             m_inp.bind(m_inp_endpoint);
+            m_ctl.bind(m_ctl_endpoint);
             m_reactor.add(m_tcp, std::bind(&dmsz::log::zlogpull::in_tcp, this));
             m_reactor.add(m_ipc, std::bind(&dmsz::log::zlogpull::in_ipc, this));
             m_reactor.add(m_inp, std::bind(&dmsz::log::zlogpull::in_inp, this));
+            m_reactor.add(m_ctl, std::bind(&dmsz::log::zlogpull::in_ctl, this));
             while (m_run && m_reactor.poll()) {
             }
 
@@ -105,6 +113,29 @@ namespace dmsz {
             m_inp.receive(msg);
             if (msg.parts())
                 route(msg);
+        }
+
+        void
+        zlogpull::in_ctl()
+        {
+            if (!m_run) return;
+            zmqpp::message msg;
+            m_ctl.receive(msg);
+            if (!msg.parts()) return;
+            zmqpp::message ret;
+            int cmd;
+            msg.get(cmd, 0);
+            if(cmd == (int)dmsz::log::cmd::endpoint)
+            {
+                int proto;
+                msg.get(proto, 1);
+                if(proto == (int)dmsz::log::proto::ipc)
+                    ret << m_ipc_endpoint;
+                if(proto == (int)dmsz::log::proto::tcp)
+                    ret << m_tcp_endpoint;
+                m_ctl.send(ret);
+            }
+
         }
     }
 }
