@@ -1,3 +1,4 @@
+
 cmake_minimum_required(VERSION 2.8.0)
 
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
@@ -23,10 +24,11 @@ include_directories(
     "${CMAKE_SOURCE_DIR}/ini"
 )
 # Get source files list
-file(GLOB SRC_LIST *.cpp)
-
+file(GLOB SRC_LIST *.cc)
 file(GLOB H_LIST *.h)
 
 
-add_executable(dms ${SRC_LIST} ${H_LIST})
-target_link_libraries(dms dmsz daemon dmszlog dmszini pthread)
+add_executable(dmslog ${SRC_LIST} ${H_LIST})
+target_link_libraries(dmslog dmszlog)
+
+

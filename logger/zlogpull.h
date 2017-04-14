@@ -33,34 +33,13 @@ namespace dmsz {
             static zmqpp::context*  ctx;
         public:
             zlogpull();
-            virtual ~zlogpull();
-            static const std::string&
-            inproc_endpoint()
-            {
-                return m_inp_endpoint;
-            }
-        private:
-            std::thread spawn();
+            virtual ~zlogpull();            
+        private:            
             void run();
-            void route(zmqpp::message& msg) const;
-            void in_tcp();
-            void in_ipc();
-            void in_inp();
-            void in_ctl();
-            std::string uuid();
+            void route(zmqpp::message& msg) const;           
         private:
             zmqpp::context m_ctx;
             zmqpp::socket m_tcp;
-            zmqpp::socket m_ipc;
-            zmqpp::socket m_inp;
-            zmqpp::socket m_ctl; // control channel
-            volatile bool m_run;
-            std::thread m_thread;
-            zmqpp::reactor m_reactor;
-            std::string m_tcp_endpoint;            
-            std::string m_ipc_endpoint;
-            std::string m_ctl_endpoint;
-            static std::string m_inp_endpoint;
         };
     }
 }

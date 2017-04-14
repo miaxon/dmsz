@@ -32,7 +32,6 @@
 #include <zmqpp/context.hpp>
 
 static std::string tcp_endpoint("tcp://127.0.0.1:33353");
-static std::string ipc_endpoint("ipc://11111111");
 static dmsz::log::zlogpull logpull;
 
 //#define MULTI_THREAD
@@ -42,13 +41,13 @@ void test() {
     using namespace std;
     using namespace std::chrono;
 
-    unsigned int howmany = 100;//0000;
+    unsigned int howmany = 1000000;
     vector<thread> threads;
     auto start = system_clock::now();
 
 
 #if !defined(MULTI_THREAD)
-    dmsz::log::zlog_mt logger(tcp_endpoint);
+    dmsz::log::zlog_st logger(tcp_endpoint);
     for (unsigned int i = 0; i < howmany; i++) {
         //Has to be customized for every logger
         INFO("asdasdasd");
@@ -91,15 +90,8 @@ void test() {
 
 int main(int argc, char** argv) {
 
-    //getchar();
-    //test();
-    //getchar();
     dmsz::log::zlog_st logger(tcp_endpoint);
-    //INFO("dfdf");
-    logger.info("0000000000000");
-    
-    
-    //getchar();
+    INFO("start");
 
     return 0;
 }
