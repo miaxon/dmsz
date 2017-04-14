@@ -20,7 +20,7 @@
 #include <fmt/format.h>
 #include <chrono>
 #include <atomic>
-
+#include <future>
 #include "zlogworker.h"
 namespace dmsz {
     namespace log {
@@ -32,16 +32,18 @@ namespace dmsz {
         public:
             static zmqpp::context*  ctx;
         public:
-            zlogpull();
+            zlogpull(long poll_timeout = 10);
             virtual ~zlogpull();
             static const std::string&
             inproc_endpoint()
             {
                 return m_inp_endpoint;
             }
+            void start(long pull_timeout = 10);
+            void stop();
         private:
             std::thread spawn();
-            void run();
+            bool run();
             void route(zmqpp::message& msg) const;
             void in_tcp();
             void in_ipc();
@@ -55,12 +57,14 @@ namespace dmsz {
             zmqpp::socket m_inp;
             zmqpp::socket m_ctl; // control channel
             volatile bool m_run;
-            std::thread m_thread;
+            volatile long m_poll_timeout;
+            std::future<bool> m_fut;
             zmqpp::reactor m_reactor;
             std::string m_tcp_endpoint;            
             std::string m_ipc_endpoint;
             std::string m_ctl_endpoint;
             static std::string m_inp_endpoint;
+            
         };
     }
 }

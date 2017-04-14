@@ -18,14 +18,15 @@ std::string dmsz::log::zlogpull::m_inp_endpoint;
 namespace dmsz {
     namespace log {
 
-        zlogpull::zlogpull() :
+        zlogpull::zlogpull(long pool_timeout) :
         m_ctx(),
         m_tcp(m_ctx, zmqpp::socket_type::pull),
         m_ipc(m_ctx, zmqpp::socket_type::pull),
         m_inp(m_ctx, zmqpp::socket_type::pull),
         m_ctl(m_ctx, zmqpp::socket_type::reply),
         m_run(true),
-        m_thread(spawn()),
+        m_poll_timeout(pool_timeout),
+        m_fut(std::async(std::launch::async, &dmsz::log::zlogpull::run, this)),
         m_reactor()
         {
             if (!ctx)
@@ -42,21 +43,34 @@ namespace dmsz {
             return std::string(uuid_str);
         }
 
-        std::thread
-        zlogpull::spawn()
+        void
+        zlogpull::start(long pull_timeout)
         {
-            std::thread t(std::bind(&dmsz::log::zlogpull::run, this));
-            t.detach();
-            return t;
+            if (!m_run) {
+                m_poll_timeout = pull_timeout;
+                m_run = true;
+                m_fut = std::async(std::launch::async, &dmsz::log::zlogpull::run, this);
+                
+            }
+        }
+
+        void
+        zlogpull::stop()
+        {
+            if (m_run) {
+                m_run = false;
+                //m_ctl.send(zmqpp::signal::stop);
+                //m_fut.get();
+            }
         }
 
         zlogpull::~zlogpull()
         {
-            m_run = false;
-            std::this_thread::sleep_for(std::chrono::milliseconds(1000));
+           m_run = false;
+           m_fut.get();
         }
 
-        void
+        bool
         zlogpull::run()
         {
             m_inp_endpoint = fmt::format("inproc://{}", uuid());
@@ -68,17 +82,24 @@ namespace dmsz {
             m_ipc.bind(m_ipc_endpoint);
             m_inp.bind(m_inp_endpoint);
             m_ctl.bind(m_ctl_endpoint);
+
             m_reactor.add(m_tcp, std::bind(&dmsz::log::zlogpull::in_tcp, this));
             m_reactor.add(m_ipc, std::bind(&dmsz::log::zlogpull::in_ipc, this));
             m_reactor.add(m_inp, std::bind(&dmsz::log::zlogpull::in_inp, this));
             m_reactor.add(m_ctl, std::bind(&dmsz::log::zlogpull::in_ctl, this));
-            while (m_run && m_reactor.poll()) {
-            }
 
+            while (m_run) {
+                try {
+                    m_reactor.poll(m_poll_timeout);
+                } catch (std::exception& e) {
+                    std::cout << "~poll " << e.what() << std::endl;
+                }
+            }
+            return true;
         }
 
         void
-        zlogpull::route(zmqpp::message& msg) const
+        zlogpull::route(zmqpp::message & msg) const
         {
             std::string key = msg.get(0);
             //std::string body = msg.get(1);
@@ -125,13 +146,12 @@ namespace dmsz {
             zmqpp::message ret;
             int cmd;
             msg.get(cmd, 0);
-            if(cmd == (int)dmsz::log::cmd::endpoint)
-            {
+            if (cmd == (int) dmsz::log::cmd::endpoint) {
                 int proto;
                 msg.get(proto, 1);
-                if(proto == (int)dmsz::log::proto::ipc)
+                if (proto == (int) dmsz::log::proto::ipc)
                     ret << m_ipc_endpoint;
-                if(proto == (int)dmsz::log::proto::tcp)
+                if (proto == (int) dmsz::log::proto::tcp)
                     ret << m_tcp_endpoint;
                 m_ctl.send(ret);
             }

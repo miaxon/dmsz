@@ -33,7 +33,7 @@
 
 static std::string tcp_endpoint("tcp://127.0.0.1:33353");
 static std::string ipc_endpoint("ipc://11111111");
-static dmsz::log::zlogpull logpull;
+static dmsz::log::zlogpull logpull(zmqpp::poller::wait_forever);
 dmsz::log::zlog_st tcp_log(tcp_endpoint);
 dmsz::log::zlog_st ipc_log(ipc_endpoint);
 dmsz::log::zlog_st inp_log;
@@ -41,7 +41,6 @@ dmsz::log::zlog_st inp_log;
 dmsz::log::zlog_mt tcp_logm(tcp_endpoint);
 dmsz::log::zlog_mt ipc_logm(ipc_endpoint);
 dmsz::log::zlog_mt inp_logm;
-
 
 enum optionIndex {
     UNKNOWN, HELP, DAEMON
@@ -55,8 +54,10 @@ const option::Descriptor usage[] = {
 };
 #define MULTI_THREAD
 
-void test() {
-    
+void
+test()
+{
+
     dmsz::log::zlog_st& logger = inp_log;
     dmsz::log::zlog_mt& loggerm = tcp_logm;
     using namespace std;
@@ -68,7 +69,7 @@ void test() {
 
 
 #if !defined(MULTI_THREAD)
-    
+
     for (unsigned int i = 0; i < howmany; i++) {
         //Has to be customized for every logger
         logger.info(logger.protostring() + " #" + std::to_string(i));
@@ -110,11 +111,26 @@ void test() {
     //Logger uninitialization if necessary 
 }
 
-int main(int argc, char** argv) {
+int
+main(int argc, char** argv)
+{
 
     //getchar();
-    test();
+    //test();
     //getchar();
+    dmsz::log::zlog_st logger;
+    //std::getchar();
+
+    logger.info("");
+    logger.info("sdsdsd");
+    logger.info("sdsdsd");
+    logger.info("sdsdsd");
+    logpull.stop();
+    logpull.start();
+    logger.info("");
+    logger.info("sdsdsd");
+    logger.info("sdsdsd");
+    logger.info("sdsdsd");
     return 0;
 }
 /*dmsz::log::zlog logger(log_endpoint);
