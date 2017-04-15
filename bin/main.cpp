@@ -130,6 +130,7 @@ main(int argc, char** argv)
     //logger.info("");
     //logger.info("sdsdsd");
     logger.info("sdsdsd");
+    INFO("sdfsdfsdfsdf");
     //logger.info("sdsdsd");
     return 0;
 }

@@ -23,9 +23,10 @@
 #include <future>
 #include <unistd.h>
 #include <fcntl.h>
+
+#include "macrodef.h"
 #include "zlogworker.h"
 
-#define o(x) std::cout << x << std::endl
 namespace dmsz {
     namespace log {
 
