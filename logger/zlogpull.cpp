@@ -74,11 +74,9 @@ namespace dmsz {
 
         zlogpull::~zlogpull()
         {
-            if (m_run) {
-                m_run = false;
-                poll_cancel();
-                m_fut.wait();
-            };
+            stop();
+            ::close(m_pipe[0]);
+            ::close(m_pipe[1]);
         }
 
         bool
@@ -109,12 +107,14 @@ namespace dmsz {
                 }
             }
             o("~run returned");
+            //reactor.remove(m_pipe[0]); sigseg why??
             reactor.remove(m_ctl);
             reactor.remove(m_inp);
             reactor.remove(m_ipc);
             reactor.remove(m_tcp);
             return true;
         }
+
         void
         zlogpull::poll_cancel()
         {
@@ -122,6 +122,7 @@ namespace dmsz {
             char dummy = 1;
             ::write(m_pipe[1], &dummy, 1);
         }
+
         void
         zlogpull::poll_reset()
         {
@@ -133,9 +134,7 @@ namespace dmsz {
         void
         zlogpull::route(zmqpp::message & msg) const
         {
-            std::string key = msg.get(0);
-            //std::string body = msg.get(1);
-            std::cout << key << "\n"; //and a number: " << body << std::endl;
+            o(msg.get(0));
         }
 
         void

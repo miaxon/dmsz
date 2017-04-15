@@ -116,20 +116,20 @@ main(int argc, char** argv)
     //getchar();
     //test();
     //getchar();
-    //dmsz::log::zlog_st logger;
+    dmsz::log::zlog_st logger;
     //std::getchar();
 
     //logger.info("");
-    //logger.info("sdsdsd");
+    logger.info("sdsdsd");
     //logger.info("sdsdsd");
     //logger.info("sdsdsd");
     //getchar();
-   //logpull.stop();
+   logpull.stop();
    //getchar();
-    //logpull.start();
+    logpull.start();
     //logger.info("");
     //logger.info("sdsdsd");
-    //logger.info("sdsdsd");
+    logger.info("sdsdsd");
     //logger.info("sdsdsd");
     return 0;
 }
