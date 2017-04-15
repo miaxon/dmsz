@@ -58,8 +58,6 @@ void
 test()
 {
 
-    dmsz::log::zlog_st& logger = inp_log;
-    dmsz::log::zlog_mt& loggerm = tcp_logm;
     using namespace std;
     using namespace std::chrono;
 
@@ -118,19 +116,21 @@ main(int argc, char** argv)
     //getchar();
     //test();
     //getchar();
-    dmsz::log::zlog_st logger;
+    //dmsz::log::zlog_st logger;
     //std::getchar();
 
-    logger.info("");
-    logger.info("sdsdsd");
-    logger.info("sdsdsd");
-    logger.info("sdsdsd");
-    logpull.stop();
-    logpull.start();
-    logger.info("");
-    logger.info("sdsdsd");
-    logger.info("sdsdsd");
-    logger.info("sdsdsd");
+    //logger.info("");
+    //logger.info("sdsdsd");
+    //logger.info("sdsdsd");
+    //logger.info("sdsdsd");
+    //getchar();
+   //logpull.stop();
+   //getchar();
+    //logpull.start();
+    //logger.info("");
+    //logger.info("sdsdsd");
+    //logger.info("sdsdsd");
+    //logger.info("sdsdsd");
     return 0;
 }
 /*dmsz::log::zlog logger(log_endpoint);

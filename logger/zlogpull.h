@@ -21,7 +21,11 @@
 #include <chrono>
 #include <atomic>
 #include <future>
+#include <unistd.h>
+#include <fcntl.h>
 #include "zlogworker.h"
+
+#define o(x) std::cout << x << std::endl
 namespace dmsz {
     namespace log {
 
@@ -32,14 +36,14 @@ namespace dmsz {
         public:
             static zmqpp::context*  ctx;
         public:
-            zlogpull(long poll_timeout = 10);
+            zlogpull(long poll_timeout = zmqpp::poller::wait_forever);
             virtual ~zlogpull();
             static const std::string&
             inproc_endpoint()
             {
                 return m_inp_endpoint;
             }
-            void start(long pull_timeout = 10);
+            void start(long pull_timeout = zmqpp::poller::wait_forever);
             void stop();
         private:
             std::thread spawn();
@@ -49,6 +53,8 @@ namespace dmsz {
             void in_ipc();
             void in_inp();
             void in_ctl();
+            void poll_reset();
+            void poll_cancel();
             std::string uuid();
         private:
             zmqpp::context m_ctx;
@@ -59,10 +65,10 @@ namespace dmsz {
             volatile bool m_run;
             volatile long m_poll_timeout;
             std::future<bool> m_fut;
-            zmqpp::reactor m_reactor;
             std::string m_tcp_endpoint;            
             std::string m_ipc_endpoint;
             std::string m_ctl_endpoint;
+            int m_pipe[2];
             static std::string m_inp_endpoint;
             
         };
