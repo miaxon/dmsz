@@ -39,16 +39,16 @@ namespace dmsz {
             m_ipc_endpoint = fmt::format("ipc:///tmp/{}", uuid());
         }
 
-        dmsz::log::zlog_s
+        dmsz::log::zlogs_ptr
         zlogpull::logger_s() {
 
-            dmsz::log::zlog_s p(new dmsz::log::zlogs(&m_ctx, m_inp_endpoint));
+            dmsz::log::zlogs_ptr p(new dmsz::log::zlogs(&m_ctx, m_inp_endpoint));
             return p;
         }
 
-        dmsz::log::zlog_m
+        dmsz::log::zlogm_ptr
         zlogpull::logger_m() {
-            dmsz::log::zlog_m p(new dmsz::log::zlogm(&m_ctx, m_inp_endpoint));
+            dmsz::log::zlogm_ptr p(new dmsz::log::zlogm(&m_ctx, m_inp_endpoint));
             return p;
         }
 

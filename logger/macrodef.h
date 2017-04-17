@@ -16,8 +16,10 @@
 
 #define o(x) std::cout << x << std::endl
 
-#define INFO(x,msg) x->info(fmt::format("{} in line: {} function: {} \n\t\t\t{}", __FILE__, __LINE__, __FUNCTION__, msg)); 
-                     
+#define ZSTR_H(x) #x
+#define ZSTR_HELPER(x) ZSTR_H(x)
+#define ZTRACE(logger, ...) logger->trace("[" __FILE__ " line #" ZSTR_HELPER(__LINE__) "] " __VA_ARGS__)
+#define ZDEBUG(logger, ...) logger->debug(__VA_ARGS__)
 
     
 #endif /* MACRODEF_H */

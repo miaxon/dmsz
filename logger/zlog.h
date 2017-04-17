@@ -23,9 +23,9 @@
 #include <fmt/ostream.h>
 #include <fmt/time.h>
 #include <zmqpp/zmqpp.hpp>
-#include <zmqpp/proxy.hpp>
 
 #include "macrodef.h"
+#include "zlogmsg.h"
 
 namespace dmsz {
     namespace log {
@@ -68,7 +68,7 @@ namespace dmsz {
         class zlog {
         public:
 
-            zlog(zmqpp::context* pull_ctx,zmqpp::endpoint_t& endpoint) :
+            zlog(zmqpp::context* pull_ctx, zmqpp::endpoint_t& endpoint) :
             m_push(*pull_ctx, zmqpp::socket_type::push),
             m_proto(dmsz::log::proto::inproc) {
                 m_push.connect(endpoint);
@@ -77,7 +77,7 @@ namespace dmsz {
             zlog(zmqpp::endpoint_t& endpoint) :
             m_ctx(),
             m_push(m_ctx, zmqpp::socket_type::push),
-            m_proto(endpoint[0] == 'i'? dmsz::log::proto::ipc : dmsz::log::proto::tcp) {
+            m_proto(endpoint[0] == 'i' ? dmsz::log::proto::ipc : dmsz::log::proto::tcp) {
                 m_push.connect(endpoint);
             }
 
@@ -103,34 +103,49 @@ namespace dmsz {
                 return "undefined";
             }
 
+            template <typename Arg1, typename... Args>
             void
-            info(std::string str) {
-                std::unique_lock< LOCK > lock(*m_lock);
-                using namespace std;
+            debug(const char* fmt, const Arg1& arg1, const Args&... args) {
+                
+                /*using namespace std;
                 using namespace chrono;
                 auto now = system_clock::now();
                 auto ms = duration_cast< milliseconds >(now.time_since_epoch());
                 time_t unix_time = duration_cast< seconds >(ms).count();
                 std::string text = fmt::format("[ {:%Y-%m-%d %H:%M:%S}] {}", *localtime(&unix_time), str);
-                zmqpp::message msg;
+                dmsz::log::zlogmsg msg;
                 msg << text;
-                m_push.send(msg);
+                m_push.send(msg);*/
+                
+                log(fmt, arg1, args...);
             }
-       
+            template <typename Arg1, typename... Args>
+            void 
+            trace(const char* fmt, const Arg1& arg1, const Args&... args){
+                log(fmt, arg1, args...);
+            }
+
         private:
             zmqpp::context m_ctx;
             zmqpp::socket m_push;
             dmsz::log::proto m_proto;
             std::shared_ptr< LOCK > m_lock{ std::make_shared< LOCK >()};
-            
-
-
+            fmt::MemoryWriter m_fmt;
+        private:
+            template <typename... Args>
+            void log(const char* fmt, const Args&... args)
+            {
+                std::unique_lock< LOCK > lock(*m_lock);
+                m_fmt.write(fmt, args...);
+                m_push.send(m_fmt.str(), true);
+                m_fmt.clear();
+            }
         };
         using zlogs = zlog<null_lock_t>;
         using zlogm = zlog<std::mutex>;
-        using zlog_s = std::shared_ptr<dmsz::log::zlogs>;
-        using zlog_m = std::shared_ptr<dmsz::log::zlogm>;
-        
+        using zlogs_ptr = std::shared_ptr<dmsz::log::zlogs>;
+        using zlogm_ptr = std::shared_ptr<dmsz::log::zlogm>;
+
     }// namespace log
 }// namespace dmsz
 

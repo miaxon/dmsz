@@ -39,8 +39,8 @@ namespace dmsz {
             virtual ~zlogpull();
             void start(long pull_timeout = zmqpp::poller::wait_forever);
             void stop();
-            dmsz::log::zlog_s logger_s();
-            dmsz::log::zlog_m logger_m();
+            dmsz::log::zlogs_ptr logger_s();
+            dmsz::log::zlogm_ptr logger_m();
             
         private:
             bool run();

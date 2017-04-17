@@ -22,25 +22,16 @@ static dmsz::log::zlogpull logpull;
 /*
  * 
  */
-void run(dmsz::log::zlog_m& logger) {
-    for (int i = 0; i < 1000000; i++) {
-        INFO(logger, "          MT " + std::to_string(i));
-    }
 
-}
 
 int main(int argc, char** argv) {
     //getchar();
-    dmsz::log::zlog_m logger1 = logpull.logger_m();
-    dmsz::log::zlogm logger3(tcp_endpoint);
-    dmsz::log::zlog_s logger2 = logpull.logger_s();
-    thread t(std::bind(&run, logger1));
-    t.detach();
-    for (int i = 0; i < 1000000; i++) {
-        logger1->info("MT " + std::to_string(i));
-        logger3.info("   TCP" + std::to_string(i));
-        logger2->info("   ST  " + std::to_string(i));
-    }
+    auto logger = logpull.logger_s();
+    ZTRACE(logger, "  MT{}{}", 6, 7);
+    ZTRACE(logger, "  MT{}{}", 6, 7);
+    ZDEBUG(logger, "Support for int: {0:d};  hex: {0:x};  oct: {0:o}; bin: {0:b}", 42);
+
+
     getchar();
     return 0;
 }

@@ -28,6 +28,6 @@ file(GLOB H_LIST *.h)
 
 
 add_library(dmszlog SHARED ${SRC_LIST} ${H_LIST})
-target_link_libraries(dmszlog fmt zmqpp uuid zmq)
+target_link_libraries(dmszlog fmt zmqpp uuid zmq msgpackc)
 
 
