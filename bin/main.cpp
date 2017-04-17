@@ -34,13 +34,7 @@
 static std::string tcp_endpoint("tcp://127.0.0.1:33353");
 static std::string ipc_endpoint("ipc://11111111");
 static dmsz::log::zlogpull logpull(zmqpp::poller::wait_forever);
-dmsz::log::zlog_st tcp_log(tcp_endpoint);
-dmsz::log::zlog_st ipc_log(ipc_endpoint);
-dmsz::log::zlog_st inp_log;
 
-dmsz::log::zlog_mt tcp_logm(tcp_endpoint);
-dmsz::log::zlog_mt ipc_logm(ipc_endpoint);
-dmsz::log::zlog_mt inp_logm;
 
 enum optionIndex {
     UNKNOWN, HELP, DAEMON
@@ -54,84 +48,11 @@ const option::Descriptor usage[] = {
 };
 #define MULTI_THREAD
 
-void
-test()
-{
-
-    using namespace std;
-    using namespace std::chrono;
-
-    unsigned int howmany = 1000000;
-    vector<thread> threads;
-    auto start = system_clock::now();
-
-
-#if !defined(MULTI_THREAD)
-
-    for (unsigned int i = 0; i < howmany; i++) {
-        //Has to be customized for every logger
-        logger.info(logger.protostring() + " #" + std::to_string(i));
-        loggerm.info(loggerm.protostring() + " #" + std::to_string(i));
-        ipc_logm.info(ipc_logm.protostring() + " #" + std::to_string(i));
-    }
-#else    
-    int thread_count = 4;
-    howmany /= thread_count;
-    for (int t = 0; t < thread_count; ++t) {
-        threads.push_back(std::thread([&] {
-            dmsz::log::zlog_st logger;
-            for (unsigned int i = 0; i < howmany; i++) {
-                //Has to be customized for every logger
-                //stringstream ss;
-                //ss << std::this_thread::get_id() << " Message #" << i;
-                logger.info("#" + std::to_string(i));
-                        //std::this_thread::sleep_for (std::chrono::nanoseconds(10));
-            }
-        }));
-    }
-
-
-    for (auto &t : threads) {
-        t.join();
-    };
-
-    howmany *= thread_count;
-
-#endif
-
-    auto delta = system_clock::now() - start;
-    auto delta_d = duration_cast<duration<double>> (delta).count();
-
-    stringstream ss;
-    ss << "Time = " << ((double) howmany / delta_d) << " per second, total time = " << delta_d;
-    std::cout << ss.str() << std::endl;
-
-    //Logger uninitialization if necessary 
-}
 
 int
 main(int argc, char** argv)
 {
 
-    //getchar();
-    //test();
-    //getchar();
-    dmsz::log::zlog_st logger;
-    //std::getchar();
-
-    //logger.info("");
-    logger.info("sdsdsd");
-    //logger.info("sdsdsd");
-    //logger.info("sdsdsd");
-    //getchar();
-   logpull.stop();
-   //getchar();
-    logpull.start();
-    //logger.info("");
-    //logger.info("sdsdsd");
-    logger.info("sdsdsd");
-    INFO("sdfsdfsdfsdf");
-    //logger.info("sdsdsd");
     return 0;
 }
 /*dmsz::log::zlog logger(log_endpoint);

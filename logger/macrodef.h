@@ -16,7 +16,7 @@
 
 #define o(x) std::cout << x << std::endl
 
-#define INFO(msg) logger.info(fmt::format("{} in line: {} function: {} \n\t\t\t{}", __FILE__, __LINE__, __FUNCTION__, msg)); 
+#define INFO(x,msg) x->info(fmt::format("{} in line: {} function: {} \n\t\t\t{}", __FILE__, __LINE__, __FUNCTION__, msg)); 
                      
 
     

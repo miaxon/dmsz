@@ -25,8 +25,7 @@
 #include <zmqpp/zmqpp.hpp>
 #include <zmqpp/proxy.hpp>
 
-#include "zlogpull.h"
-
+#include "macrodef.h"
 
 namespace dmsz {
     namespace log {
@@ -69,22 +68,21 @@ namespace dmsz {
         class zlog {
         public:
 
-            zlog() :
-            m_ctx(dmsz::log::zlogpull::ctx),
-            m_push(*m_ctx, zmqpp::socket_type::push),
+            zlog(zmqpp::context* pull_ctx,zmqpp::endpoint_t& endpoint) :
+            m_push(*pull_ctx, zmqpp::socket_type::push),
             m_proto(dmsz::log::proto::inproc) {
-                m_push.connect(dmsz::log::zlogpull::inproc_endpoint());
+                m_push.connect(endpoint);
             }
 
             zlog(zmqpp::endpoint_t& endpoint) :
-            m_ctx_internal(),
-            m_ctx(&m_ctx_internal),
-            m_push(*m_ctx, zmqpp::socket_type::push),
+            m_ctx(),
+            m_push(m_ctx, zmqpp::socket_type::push),
             m_proto(endpoint[0] == 'i'? dmsz::log::proto::ipc : dmsz::log::proto::tcp) {
                 m_push.connect(endpoint);
             }
 
             virtual ~zlog() {
+                o("~zlog");
             };
 
             dmsz::log::proto
@@ -120,8 +118,7 @@ namespace dmsz {
             }
        
         private:
-            zmqpp::context m_ctx_internal;
-            zmqpp::context* m_ctx;
+            zmqpp::context m_ctx;
             zmqpp::socket m_push;
             dmsz::log::proto m_proto;
             std::shared_ptr< LOCK > m_lock{ std::make_shared< LOCK >()};
@@ -129,9 +126,11 @@ namespace dmsz {
 
 
         };
-        using zlog_st = zlog<null_lock_t>;
-        using zlog_mt = zlog<std::mutex>;
-
+        using zlogs = zlog<null_lock_t>;
+        using zlogm = zlog<std::mutex>;
+        using zlog_s = std::shared_ptr<dmsz::log::zlogs>;
+        using zlog_m = std::shared_ptr<dmsz::log::zlogm>;
+        
     }// namespace log
 }// namespace dmsz
 

@@ -25,7 +25,7 @@
 #include <fcntl.h>
 
 #include "macrodef.h"
-#include "zlogworker.h"
+#include "zlog.h"
 
 namespace dmsz {
     namespace log {
@@ -35,19 +35,14 @@ namespace dmsz {
         };
         class zlogpull {
         public:
-            static zmqpp::context*  ctx;
-        public:
             zlogpull(long poll_timeout = zmqpp::poller::wait_forever);
             virtual ~zlogpull();
-            static const std::string&
-            inproc_endpoint()
-            {
-                return m_inp_endpoint;
-            }
             void start(long pull_timeout = zmqpp::poller::wait_forever);
             void stop();
+            dmsz::log::zlog_s logger_s();
+            dmsz::log::zlog_m logger_m();
+            
         private:
-            std::thread spawn();
             bool run();
             void route(zmqpp::message& msg) const;
             void in_tcp();
@@ -57,6 +52,7 @@ namespace dmsz {
             void poll_reset();
             void poll_cancel();
             std::string uuid();
+            void set_endpoints();
         private:
             zmqpp::context m_ctx;
             zmqpp::socket m_tcp;
@@ -69,8 +65,9 @@ namespace dmsz {
             std::string m_tcp_endpoint;            
             std::string m_ipc_endpoint;
             std::string m_ctl_endpoint;
+            std::string m_inp_endpoint;
             int m_pipe[2];
-            static std::string m_inp_endpoint;
+            
             
         };
     }
